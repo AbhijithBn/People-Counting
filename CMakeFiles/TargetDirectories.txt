@@ -1,0 +1,3 @@
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles/rebuild_cache.dir
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles/edit_cache.dir
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles/DisplayVideo.dir

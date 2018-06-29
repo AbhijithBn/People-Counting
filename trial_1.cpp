@@ -1,221 +1,480 @@
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <opencv2/opencv.hpp>
 #include <iostream>
-//#include "background_segm.hpp"
-
+#include "Blob.h"// this is the included class 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//these are included namespaces
 using namespace cv;
 using namespace std;
 
-int thresh=100;
-int max_thresh=255;
-RNG rng(12345);
 
-//init all the frames
-Mat input_frame;//input frame from the video
-Mat frame_gauss;// frame after gaussian blur
-Mat frame_backsub;//frame after background subtraction
-Mat frame_binary;//frame after binary threshold
-Mat frame_dilate;// frame after dilation
-Mat frame_contour_ip;//frame input to contour finder
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//these are to specify the colour
+const Scalar SCALAR_BLACK = Scalar(0.0, 0.0, 0.0);
+const Scalar SCALAR_PINK = Scalar(255.0, 192.0, 203.0);
+const Scalar SCALAR_WHITE = Scalar(255.0, 255.0, 255.0);
+const Scalar SCALAR_YELLOW = Scalar(0.0, 255.0, 255.0);
+const Scalar SCALAR_GREEN = Scalar(0.0, 200.0, 0.0);
+const Scalar SCALAR_RED = Scalar(0.0, 0.0, 255.0);
+const Scalar SCALAR_BLUE = Scalar(255.0, 0.0, 0);
 
-Mat inputframeprocessing(int,void*);
-void contourfinder(int, void* );
-//void display();
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//these are the functions
+
+void matchCurrentFrameBlobsToExistingBlobs(std::vector<Blob> &existingBlobs, std::vector<Blob> &currentFrameBlobs);
+void addBlobToExistingBlobs(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs, int &intIndex);
+void addNewBlob(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs);
+double distanceBetweenPoints(cv::Point point1, cv::Point point2);
+void drawContour(cv::Size imageSize, std::vector<std::vector<cv::Point> > contours, std::string strImageName);//draw contour with input as contour
+void drawContour(cv::Size imageSize, std::vector<Blob> blobs, std::string strImageName);//draw contour with input as object to a class
+void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy);
+
+bool checkIfBlobsCrossedTheLine(std::vector<Blob> &blobs, int &intRefLinePosition, int &countup, int &countdown);
+void drawCountupOnImage(int &countup, cv::Mat &imgFrame2Copy);
+void drawCountdownOnImage(int &countdown, cv::Mat &imgFrame2Copy);
+
+
+void calcCircles(const Mat &input, vector<Vec3f> &circles);
+void drawCircle(Mat &input, const vector<Vec3f> &circles);
+
+void display_output(String frame_name,Mat frame_matrix);//this is to display the output but not contours
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// These are matrices
+Mat imgFrame1; //First frame 
+Mat imgFrame2; //Second frame
+Mat frame_gauss;// after gaussian blur
+Mat frame_backsub;//after background subtraction
+Mat structuringElement5x5;//is a structuring element matrix for binary thresholding
+Mat imgFrame1Copy,imgFrame2Copy;//clones of frame 1 and frame 2
+Mat imgThresh; //after binary threshold
+Mat imgThreshCopy;//used for finding contours
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//these are pointers
+cv::Ptr<BackgroundSubtractor> pMOG2; //MOG2 Background subtractor
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//these are global variables
+int num_threshold = 254;// this is threshold value for Binary thresholding
+int MAX = 255;// this is the maximum value give if it exceeds the threshold value
+
+
+Mat img_background; //MOG2 background
+
+int main(void) {
+    
+    VideoCapture cap("/home/pi/Videos/sample-02.mp4"); //input video
+    
+    Mat imgFrame1;//frame 1
+    Mat imgFrame2;//frame 2
+    
+    vector<Blob> blobs;//"blobs" object of that class Blob
+    
+
+    
+    namedWindow("imgFrame2Copy",CV_WINDOW_FULLSCREEN);
+    
+    int countup = 0;//count of the number of people coming in
+    int countdown = 0;//count of the number of people going out
+    if (!cap.isOpened()) {                                                 // if unable to open video file
+        cout << "error reading video file" << endl << endl;      // show error message
+                return(0);                                                              // and exit program
+    }
+    else
+    {
+        cout<< "success"<<endl;
+    }
+    if (cap.get(CV_CAP_PROP_FRAME_COUNT) < 2) 
+    {
+        cout << "error: video file must have at least two frames";
+        return(0);
+    }
+
+    cap.read(imgFrame1);
+    cap.read(imgFrame2);
 
 
-Ptr< BackgroundSubtractorMOG2> pMOG2;// this is a pointer to the object that is  created when background subtraction is called
+
+    //this section of the code is to add the reference line
+    Point refLine[2];
+    // 2 lines at the middle of the screen which is used as reference for counting purpose
+    // refLine[0]has 2 parts refLine[0].x and refLine[0].y
+    // refLine[1]has 2 parts refLine[1].x and refLine[1].y
+
+    int intRefLinePosition = (int)round((double)imgFrame1.rows * 0.80);
+
+    refLine[0].x = 0;//from 0th column
+    refLine[0].y = intRefLinePosition;
+
+    refLine[1].x = imgFrame1.cols - 1;// to the last column
+    refLine[1].y = intRefLinePosition;// thickness along y axis is 0
+
+
+
+    char chCheckForEscKey = 0;//this is to abort the program and initially it is 0
+
+    bool blnFirstFrame = true;//boolean to check if it is the first frame
+    int frameCount = 2;//now number of frames =2
+    
+    pMOG2 = createBackgroundSubtractorMOG2(3000, 128, false); //MOG2 approach, true with shadow, false without shadow
+    
+    while(true)
+    {
+        vector<Blob> currentFrameBlobs;//object currentFrameBlobs beongs to class Blob
+	
+	GaussianBlur(imgFrame1,frame_gauss,Size(5,5),3);//Gaussian blur using 5X5 kernel
+
+	//display_output( "Gaussian",frame_gauss);
+
+        pMOG2->apply(frame_gauss, frame_backsub);//background subtraction using MOG2
+        
+	//display_output("BACKGROUND_SUB",frame_backsub);
+
+	//this is to create a structuring element for binary thresholding
+        structuringElement5x5 = getStructuringElement(MORPH_RECT, Size(5, 5));
+        Mat structuringElement7x7 = getStructuringElement(MORPH_RECT, Size(7, 7));
+	Mat structuringElement3x3 = getStructuringElement(MORPH_RECT, Size(3, 3));
+
+	//Binary thresholding
+        threshold(frame_backsub, imgThresh, num_threshold, MAX, THRESH_BINARY); // from 0~MAX num>num_threshold set white, num<num_threshold set black
+       
+        //display_output("BINARY IMAGE",imgThresh);
+        for (unsigned int i = 0; i < 2; i++) 
+	{
+            erode(imgThresh, imgThresh, structuringElement3x3);
+            dilate(imgThresh, imgThresh, structuringElement3x3);
+            dilate(imgThresh, imgThresh, structuringElement3x3);
+
+            
+        }
+
+        
+	//display_output("DILATION AND EROSION",imgThresh);
+
+        imgThreshCopy = imgThresh.clone();//cloning of matrix(duplicte)
+        
+        vector<vector<Point> > contours;//contours is a 2D vector which contains all the contours after finding them
+        
+        findContours(imgThreshCopy, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);//RETR_EXTERNAL retrieves only extreme outer contours
+	// 3rd parameter is contour retrieval mode,4th parameter approximates the edges
+	//CHAIN_APPROX_SIMPLE approximates the contour to small rectangles
+
+        
+        drawContour(imgThresh.size(), contours, "imgContours");//sends the contour array to the function to draw contours
+        
 
 
 
+        vector<vector<Point> > convexHulls(contours.size());//convexHulls is similar to contours but creates a whole approxiated image from the irregularly shaped image
+        
+        for (unsigned int i = 0; i < contours.size(); i++) 
+	{
+            convexHull(contours[i], convexHulls[i],false);
+        }
+        
+        //drawContour(imgThresh.size(), convexHulls, "imgConvexHulls");//convexHulls is an array
+        
+        for (auto &convexHull : convexHulls) 
+	{
+            Blob possibleBlob(convexHull);
+	    printf("rect_area= %d  ,aspect ratio = %.1f ,rect width= %d ,rect_height = %d ,diagonal size = %.1f \n\n\n ",possibleBlob.currentBoundingRect.area(),possibleBlob.dblCurrentAspectRatio,possibleBlob.currentBoundingRect.width,possibleBlob.currentBoundingRect.height,possibleBlob.dblCurrentDiagonalSize);
+            
+            if (possibleBlob.currentBoundingRect.area() > 600 &&
+                possibleBlob.dblCurrentAspectRatio > 0.6 &&
+                possibleBlob.dblCurrentAspectRatio < 4.0 &&
+                possibleBlob.currentBoundingRect.width > 25 && //imgblock width
+                possibleBlob.currentBoundingRect.height > 25 && //imgblock height
+                possibleBlob.dblCurrentDiagonalSize > 60.0 &&
+                (cv::contourArea(possibleBlob.currentContour) / (double)possibleBlob.currentBoundingRect.area()) > 0.50) {
+                currentFrameBlobs.push_back(possibleBlob);
+            }
+        }
+        
+        drawContour(imgThresh.size(), currentFrameBlobs, "imgCurrentFrameBlobs");//currentFrameBlobs is an object to a function 
+
+
+        if (blnFirstFrame == true) //if it is the first frame
+	{
+            for (auto &currentFrameBlob : currentFrameBlobs) //for every blob in the current frame
+	    {
+                blobs.push_back(currentFrameBlob);//push that blob into blobs for tracking
+            }
+        } 
+	else 
+	{
+            matchCurrentFrameBlobsToExistingBlobs(blobs, currentFrameBlobs);// else match it with an already existing blob
+        }//by passing the object blobs of class Blob and current Blob we are working on
+        
+        //drawContour(imgThresh.size(), blobs, "imgBlobs");
+        
+        imgFrame2Copy = imgFrame2.clone();          // get another copy of frame 2 since we changed the previous frame 2 copy in the processing above
+        
+        //drawBlobInfoOnImage(blobs, imgFrame2Copy);
+        
+        bool blnAtLeastOneBlobCrossedTheLine = checkIfBlobsCrossedTheLine(blobs, intRefLinePosition, countup, countdown);
+        
+        if (blnAtLeastOneBlobCrossedTheLine == true) {
+            cv::line(imgFrame2Copy, refLine[0], refLine[1], SCALAR_GREEN, 2);
+        }
+        else {
+            cv::line(imgFrame2Copy, refLine[0], refLine[1], SCALAR_RED, 2);
+        }
+        
+        drawCountupOnImage(countup, imgFrame2Copy);
+        drawCountdownOnImage(countdown, imgFrame2Copy);
+        cv::imshow("imgFrame2Copy", imgFrame2Copy);
+        
+        //cv::waitKey(0);                 // uncomment this line to go frame by frame for debugging
+        
+        // now we prepare for the next iteration
+        
+        currentFrameBlobs.clear();
+        
+        imgFrame1 = imgFrame2.clone();           // move frame 1 up to where frame 2 is
+        
+        if ((cap.get(CV_CAP_PROP_POS_FRAMES) + 1) < cap.get(CV_CAP_PROP_FRAME_COUNT)) {
+            cap.read(imgFrame2);
+        }
+        else {
+            std::cout << "end of video\n";
+            break;
+        }
+        
+        blnFirstFrame = false;
+        frameCount++;
+        chCheckForEscKey = cv::waitKey(1);
 
-int main(int argc, char* argv[])
+	if (waitKey(10) == 27)
+	{
+		cout << "Esc key is pressed by user. Stopping the video" << endl;
+		break;
+	}
+    }
+
+
+    return(0);
+}
+
+
+void calcCircles(const Mat &input, vector<Vec3f> &circles){
+    Mat contours;
+    Canny(input,contours,50,150);
+    HoughCircles(contours, circles, CV_HOUGH_GRADIENT, 1, 100, 200, 10,15,20);
+}
+
+void drawCircle(Mat &input, const vector<Vec3f> &circles){
+    for(int i=0; i<circles.size(); i++){
+        Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+        int radius = cvRound(circles[i][2]);
+        circle(input, center, radius, SCALAR_BLUE, 3, 8, 0 );
+    }
+}
+
+
+
+void matchCurrentFrameBlobsToExistingBlobs(std::vector<Blob> &existingBlobs, std::vector<Blob> &currentFrameBlobs) 
+{//so blobs will have all the existing blobs
+    
+    for (auto &existingBlob : existingBlobs) 
+    {
+        
+        existingBlob.blnCurrentMatchFoundOrNewBlob = false;//init this match with false so that you can compare 
+        // and this blnCurrentMatchFoundOrNewBlob is in blob.cpp
+
+        existingBlob.predictNextPosition();//take this blob and predict the next poisiton in blob.cpp using that algorithm
+    }
+    
+    for (auto &currentFrameBlob : currentFrameBlobs) //for every blob we have now
+    {
+        
+        int intIndexOfLeastDistance = 0;//index value
+        double dblLeastDistance = 100000.0;//least dist value
+        
+        for (unsigned int i = 0; i < existingBlobs.size(); i++) 
+	{
+            
+            if (existingBlobs[i].blnStillBeingTracked == true) 
+	    {
+                
+                double dblDistance = distanceBetweenPoints(currentFrameBlob.centerPositions.back(), existingBlobs[i].predictedNextPosition);
+                
+                if (dblDistance < dblLeastDistance) {
+                    dblLeastDistance = dblDistance;
+                    intIndexOfLeastDistance = i;
+                }
+            }
+        }
+        
+        if (dblLeastDistance < currentFrameBlob.dblCurrentDiagonalSize * 0.5) {
+            addBlobToExistingBlobs(currentFrameBlob, existingBlobs, intIndexOfLeastDistance);
+        }
+        else {
+            addNewBlob(currentFrameBlob, existingBlobs);
+        }
+        
+    }
+    
+    for (auto &existingBlob : existingBlobs) {
+        
+        if (existingBlob.blnCurrentMatchFoundOrNewBlob == false) {
+            existingBlob.intNumOfConsecutiveFramesWithoutAMatch++;
+        }
+        
+        if (existingBlob.intNumOfConsecutiveFramesWithoutAMatch >= 5) {
+            existingBlob.blnStillBeingTracked = false;
+        }
+        
+    }
+    
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void addBlobToExistingBlobs(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs, int &intIndex) {
+    
+    existingBlobs[intIndex].currentContour = currentFrameBlob.currentContour;
+    existingBlobs[intIndex].currentBoundingRect = currentFrameBlob.currentBoundingRect;
+    
+    existingBlobs[intIndex].centerPositions.push_back(currentFrameBlob.centerPositions.back());
+    
+    existingBlobs[intIndex].dblCurrentDiagonalSize = currentFrameBlob.dblCurrentDiagonalSize;
+    existingBlobs[intIndex].dblCurrentAspectRatio = currentFrameBlob.dblCurrentAspectRatio;
+    
+    existingBlobs[intIndex].blnStillBeingTracked = true;
+    existingBlobs[intIndex].blnCurrentMatchFoundOrNewBlob = true;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void addNewBlob(Blob &currentFrameBlob, std::vector<Blob> &existingBlobs) {
+    
+    currentFrameBlob.blnCurrentMatchFoundOrNewBlob = true;
+    
+    existingBlobs.push_back(currentFrameBlob);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+double distanceBetweenPoints(cv::Point point1, cv::Point point2) {
+    
+    int intX = abs(point1.x - point2.x);
+    int intY = abs(point1.y - point2.y);
+    
+    return(sqrt(pow(intX, 2) + pow(intY, 2)));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void drawContour(cv::Size imageSize, std::vector<std::vector<cv::Point> > contours, std::string strImageName) 
+{  //this drawsContour taking input of the contour itself
+    
+    Mat image(imageSize, CV_8UC3, SCALAR_BLACK);//8bit unsigned integer 3 channel (colour image)
+    
+    drawContours(image, contours, -1, SCALAR_WHITE, -1);//image is destination and contours is the source, -ve and hence contours are filled
+    
+    imshow(strImageName, image);//for output display
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void drawContour(cv::Size imageSize, std::vector<Blob> blobs, std::string strImageName) {
+    
+    cv::Mat image(imageSize, CV_8UC3, SCALAR_BLACK);
+    
+    std::vector<std::vector<cv::Point> > contours;
+    
+    for (auto &blob : blobs) {
+        if (blob.blnStillBeingTracked == true) 
+	{
+            contours.push_back(blob.currentContour);
+        }
+    }
+    
+    cv::drawContours(image, contours, -1, SCALAR_WHITE, -1);
+    
+    cv::imshow(strImageName, image);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+bool checkIfBlobsCrossedTheLine(std::vector<Blob> &blobs, int &intRefLinePosition, int &countup, int &countdown) 
+{
+    bool blnAtLeastOneBlobCrossedTheLine = false;//just initialising this boolean to be false, we're not saying blob.boolean is false
+    
+    for (auto blob : blobs) {
+        
+        if (blob.blnStillBeingTracked == true && blob.centerPositions.size() >= 2) 
+	{
+            int prevFrameIndex = (int)blob.centerPositions.size() - 2;
+            int currFrameIndex = (int)blob.centerPositions.size() - 1;
+            
+            if (blob.centerPositions[prevFrameIndex].y > intRefLinePosition && blob.centerPositions[currFrameIndex].y <= intRefLinePosition) {
+                countdown++; //in
+                blnAtLeastOneBlobCrossedTheLine = true;
+            }
+            else if (blob.centerPositions[prevFrameIndex].y < intRefLinePosition && blob.centerPositions[currFrameIndex].y >= intRefLinePosition) {
+                countup++; //out
+                blnAtLeastOneBlobCrossedTheLine = true;
+            }
+
+        }
+        
+    }
+    
+    return blnAtLeastOneBlobCrossedTheLine;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void drawBlobInfoOnImage(std::vector<Blob> &blobs, cv::Mat &imgFrame2Copy) {
+    
+    for (unsigned int i = 0; i < blobs.size(); i++) {
+        
+        if (blobs[i].blnStillBeingTracked == true) {
+            cv::rectangle(imgFrame2Copy, blobs[i].currentBoundingRect, SCALAR_RED, 2);
+            
+            int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
+            double dblFontScale = blobs[i].dblCurrentDiagonalSize / 60.0;
+            int intFontThickness = (int)std::round(dblFontScale * 1.0);
+            
+            cv::putText(imgFrame2Copy, std::to_string(i), blobs[i].centerPositions.back(), intFontFace, dblFontScale, SCALAR_GREEN, intFontThickness);
+        }
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void drawCountupOnImage(int &countup, cv::Mat &imgFrame2Copy) {
+    
+    int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
+    double dblFontScale = (imgFrame2Copy.rows * imgFrame2Copy.cols) / 300000.0;
+    int intFontThickness = (int)std::round(dblFontScale * 1.5);
+    
+    cv::Size textSize = cv::getTextSize(std::to_string(countup), intFontFace, dblFontScale, intFontThickness, 0);
+    
+    cv::Point ptTextBottomLeftPosition;
+    
+    ptTextBottomLeftPosition.x = imgFrame2Copy.cols - 1 - (int)((double)textSize.width * 6);
+    ptTextBottomLeftPosition.y = (int)((double)textSize.height * 1.25);
+    
+    cv::putText(imgFrame2Copy, "in : "+std::to_string(countup), ptTextBottomLeftPosition, intFontFace, dblFontScale, SCALAR_BLACK, intFontThickness);
+    
+}
+void drawCountdownOnImage(int &countdown, cv::Mat &imgFrame2Copy) 
+{
+    
+    int intFontFace = CV_FONT_HERSHEY_SIMPLEX;
+    double dblFontScale = (imgFrame2Copy.rows * imgFrame2Copy.cols) / 300000.0;
+    int intFontThickness = (int)std::round(dblFontScale * 1.5);
+    
+    cv::Size textSize = cv::getTextSize(std::to_string(countdown), intFontFace, dblFontScale, intFontThickness, 0);
+    
+    cv::Point ptTextBottomLeftPosition;
+    
+    ptTextBottomLeftPosition.x = imgFrame2Copy.cols - 1 - (int)((double)textSize.width * 7);
+    ptTextBottomLeftPosition.y = (int)((double)textSize.height * 2.5);
+    
+    cv::putText(imgFrame2Copy, "out : "+std::to_string(countdown), ptTextBottomLeftPosition, intFontFace, dblFontScale, SCALAR_BLACK, intFontThickness);
+    
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void display_output(String frame_name,Mat frame_matrix)
 {
-	 //open the video file for reading
- 	VideoCapture cap("/home/pi/Videos/sample-02.mp4"); 
-
-	 // if not success, exit program
- 	if (cap.isOpened() == false)  
-	 {
-  		cout << "Cannot open the video file" << endl;
-  		cin.get(); //wait for any key press
-  		return -1;
-	 }
-
-
-
- 	//get the frames rate of the video
- 	double fps = cap.get(CAP_PROP_FPS); 
- 	cout << "Frames per seconds : " << fps << endl;
-
-
-	// String window_name_2 = "Processed Video";
-	 String window_name_1 = "Input Video";
-	 namedWindow(window_name_1, WINDOW_NORMAL); //create a window
-
-
-
- 	while (true)
-	 {
-
-  		bool bSuccess = cap.read(input_frame); // read a new frame from video 
- 	 	//Breaking the while loop at the end of the video
- 	 	if (bSuccess == false) //  check if frame is grabbed  
-		{
-   			cout << "Found the end of the video" << endl;
-   			break;
-  		}
-
-	        pMOG2 = createBackgroundSubtractorMOG2(3000,128);
-
-		inputframeprocessing(0,0);// this is callback function for tuning the frame
-
- 		// this is to create a trackbar 
-		createTrackbar( " Contour thresh:", "Contours", &thresh, max_thresh, contourfinder );//contour thresh is name of the trackbar
-	  	//the trackbar is created in "Contours" window
-  		//&thresh is a pointer to thresh
-  		// max_thresh is the maximum threshold value that can be given
-  		// threshcallback is the callback function that is referred here
-
-
-
-	  	contourfinder( 0, 0 );// this is a callback function
-       		//void display();
-
-
-
-
-  		//show the frame in the created window
-  		imshow(window_name_1,input_frame);
-		//imshow(window_name_2,frame_dilate);
-
-
-	  	if (waitKey(10) == 27)
-  		{
-   			cout << "Esc key is pressed by user. Stopping the video" << endl;
-   			break;
-  		}
- 	}
-	return 0;
-
-}
-
-
-Mat inputframeprocessing(int,void*)// this is a callback function which processes the input frame
-{
-
-  //this is for gaussian blur
-  GaussianBlur(input_frame,frame_gauss,Size(5,5),3);
-
-
-  // resize the image
-  resize(frame_gauss,frame_backsub, Size(frame_gauss.size().width ,frame_gauss.size().height));
-
-
-  // background subtraction
-  pMOG2->apply(frame_backsub,frame_backsub);
-
-
-  //this is binary thresholding 
-  threshold(frame_backsub, frame_binary, 160 , 255, CV_THRESH_BINARY);
-  namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
-  imshow( "Contours", frame_backsub );
-
-  // this is to dilate the binary image 
-  dilate(frame_binary, frame_dilate, getStructuringElement(MORPH_RECT, Size(3, 3)));
-
-  // for reswizing before finding contours
-  resize(frame_dilate,frame_contour_ip,Size(frame_dilate.size().width*4 ,frame_dilate.size().height*4));// resize the input dilated image and sends an output image of name  frame_contour_ip
-
-  return(frame_contour_ip);
-}
-
-
-
-
-void contourfinder(int, void* )
-{
-  Mat canny_output;// matrix after applying canny edge detection
-
-  vector<vector<Point> > contours;// this is a 2 dimensional integer vector
-  vector<Vec4i> hierarchy;// this is a 4 dimensional vector
-
-  /// Detect edges using canny
-  Canny( frame_contour_ip, canny_output, thresh, thresh*2, 3 );//here 3 is the kernel size,thresh->lower threshold , thresh*2->lower threshold, hence this gives a range where to find the object  , values lower than threshold will be discarded, values between the higher and the lower threshold will be considered
-
-  /// Find contours
-  findContours( canny_output, contours, hierarchy, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );//takes input image matrix and gives an edge detected matrix
-
-   /// Get the moments
-  vector<Moments> mu(contours.size() );
-  for( int i = 0; i < contours.size(); i++ )
-     { mu[i] = moments( contours[i], false ); }// this is to find the moments
-
-
-
-  //after finding contours you need to find vectors so that you con find the centre of mass 
-  vector<Point2f> mc( contours.size() ); //here mc refers to mass center
-  for( int i = 0; i < contours.size(); i++ ) // for loop with respect to contour size
-     { mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); } //this is the formula that is used to find the ceter of mass of the object in the image or video
-
-
- 
-   /// Approximate contours to polygons + get bounding rects and circles
-  vector<vector<Point> > contours_poly( contours.size() );//  Template class for 2D points specified by its coordinates x and y 
-  vector<Rect> boundRect( contours.size() );// represents a 2D rectangle with coordinates specified
-  vector<Point2f>center( contours.size() );// vector pointer to the center of the circle
-  vector<float>radius( contours.size() );// vector pointer to the radius of the circle
-
-  double dblDiagonalSize;
-  double dblAspectRatio;
-
-
-
-
-  for( int i = 0; i < contours.size(); i++ )
-     { approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );//this approximates the polygonal curve with specified precision.. 3 is epsilon which has to be changed for better precision
-       boundRect[i] = boundingRect( Mat(contours_poly[i]) );//has to be bound by rectangles
-       minEnclosingCircle( (Mat)contours_poly[i], center[i], radius[i] );//the contour has to be bound by a circle 
-     }
-
-
-   /// Draw polygonal contour + bounding rects + circles
-   Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );// drawing is a matrix which is by default filled with 0 zeros , takes arguments as size of the output of the canny function
-   for(int i = 0; i< contours.size(); i++ )//for loop to draw the contours 
-     {
-       printf(" * Contour[%d] - Area (M_00) = %.2f - Area OpenCV: %.2f  \n", i, mu[i], contourArea(contours[i]) );// display the area 
-       Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );// scalar is used to pass the pixel values
-       drawContours( drawing, contours_poly, i, color, 2, 8, hierarchy, 0, Point() );//this draws contours/edges around the object desired
-       if(contourArea(contours[i])>1500 && contourArea(contours[i])<90000)//area condition for objects 
-       {
-         rectangle( drawing, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );//draw a rectangle with dynamically created length and breadth
-         // circle(drawing,Point(center.x,center.y),5,color,2,8,0);
-
-          Point center = Point((boundRect[i].x + boundRect[i].width)/2, (boundRect[i].y + boundRect[i].height)/2);//this is a pointer to the middle of every square
-
-
-          line(drawing,Point(center.x,center.y),Point(center.x,center.y-25),color,2,8,0);//line is used to draw lines 
-	  line(drawing,Point(center.x,center.y),Point(center.x,center.y+25),color,2,8,0);
-	  line(drawing,Point(center.x,center.y),Point(center.x-25,center.y),color,2,8,0);
-	  line(drawing,Point(center.x,center.y),Point(center.x+25,center.y),color,2,8,0);
- 	  putText(drawing,"object is here ",Point(center.x,center.y),1,1,color,2,8,0);   
-
-         // bool blnStillBeingTracked = true;
-         // bool blnCurrentMatchFoundOrNewBlob = true;
-         // int NumOfConsecutiveFramesWithoutAMatch = 0;
-
-       }
-     }
-
-  bool object_present;// check if there is any person walking by checking if there are and detected edges
-  if(contours.size()>0)// this part of the code is not mandatory
-	object_present=true;
-  else
-	object_present=false;
-
-
-
-  /// Show in a window
-
-
-}
-
+	namedWindow(frame_name, WINDOW_NORMAL);
+	imshow(frame_name,frame_matrix);
+}
