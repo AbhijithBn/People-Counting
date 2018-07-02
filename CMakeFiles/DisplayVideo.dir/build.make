@@ -57,28 +57,28 @@ include CMakeFiles/DisplayVideo.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/DisplayVideo.dir/flags.make
 
-CMakeFiles/DisplayVideo.dir/trial_1.cpp.o: CMakeFiles/DisplayVideo.dir/flags.make
-CMakeFiles/DisplayVideo.dir/trial_1.cpp.o: trial_1.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/DisplayVideo.dir/trial_1.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DisplayVideo.dir/trial_1.cpp.o -c /home/pi/opencv-3.4.1/opencv_demo/project/trial/trial_1.cpp
+CMakeFiles/DisplayVideo.dir/main.cpp.o: CMakeFiles/DisplayVideo.dir/flags.make
+CMakeFiles/DisplayVideo.dir/main.cpp.o: main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/DisplayVideo.dir/main.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DisplayVideo.dir/main.cpp.o -c /home/pi/opencv-3.4.1/opencv_demo/project/trial/main.cpp
 
-CMakeFiles/DisplayVideo.dir/trial_1.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DisplayVideo.dir/trial_1.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/opencv-3.4.1/opencv_demo/project/trial/trial_1.cpp > CMakeFiles/DisplayVideo.dir/trial_1.cpp.i
+CMakeFiles/DisplayVideo.dir/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DisplayVideo.dir/main.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/opencv-3.4.1/opencv_demo/project/trial/main.cpp > CMakeFiles/DisplayVideo.dir/main.cpp.i
 
-CMakeFiles/DisplayVideo.dir/trial_1.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DisplayVideo.dir/trial_1.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/opencv-3.4.1/opencv_demo/project/trial/trial_1.cpp -o CMakeFiles/DisplayVideo.dir/trial_1.cpp.s
+CMakeFiles/DisplayVideo.dir/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DisplayVideo.dir/main.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/opencv-3.4.1/opencv_demo/project/trial/main.cpp -o CMakeFiles/DisplayVideo.dir/main.cpp.s
 
-CMakeFiles/DisplayVideo.dir/trial_1.cpp.o.requires:
+CMakeFiles/DisplayVideo.dir/main.cpp.o.requires:
 
-.PHONY : CMakeFiles/DisplayVideo.dir/trial_1.cpp.o.requires
+.PHONY : CMakeFiles/DisplayVideo.dir/main.cpp.o.requires
 
-CMakeFiles/DisplayVideo.dir/trial_1.cpp.o.provides: CMakeFiles/DisplayVideo.dir/trial_1.cpp.o.requires
-	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/trial_1.cpp.o.provides.build
-.PHONY : CMakeFiles/DisplayVideo.dir/trial_1.cpp.o.provides
+CMakeFiles/DisplayVideo.dir/main.cpp.o.provides: CMakeFiles/DisplayVideo.dir/main.cpp.o.requires
+	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/main.cpp.o.provides.build
+.PHONY : CMakeFiles/DisplayVideo.dir/main.cpp.o.provides
 
-CMakeFiles/DisplayVideo.dir/trial_1.cpp.o.provides.build: CMakeFiles/DisplayVideo.dir/trial_1.cpp.o
+CMakeFiles/DisplayVideo.dir/main.cpp.o.provides.build: CMakeFiles/DisplayVideo.dir/main.cpp.o
 
 
 CMakeFiles/DisplayVideo.dir/Blob.cpp.o: CMakeFiles/DisplayVideo.dir/flags.make
@@ -105,16 +105,42 @@ CMakeFiles/DisplayVideo.dir/Blob.cpp.o.provides: CMakeFiles/DisplayVideo.dir/Blo
 CMakeFiles/DisplayVideo.dir/Blob.cpp.o.provides.build: CMakeFiles/DisplayVideo.dir/Blob.cpp.o
 
 
+CMakeFiles/DisplayVideo.dir/Morph.cpp.o: CMakeFiles/DisplayVideo.dir/flags.make
+CMakeFiles/DisplayVideo.dir/Morph.cpp.o: Morph.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/DisplayVideo.dir/Morph.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DisplayVideo.dir/Morph.cpp.o -c /home/pi/opencv-3.4.1/opencv_demo/project/trial/Morph.cpp
+
+CMakeFiles/DisplayVideo.dir/Morph.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DisplayVideo.dir/Morph.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/opencv-3.4.1/opencv_demo/project/trial/Morph.cpp > CMakeFiles/DisplayVideo.dir/Morph.cpp.i
+
+CMakeFiles/DisplayVideo.dir/Morph.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DisplayVideo.dir/Morph.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/opencv-3.4.1/opencv_demo/project/trial/Morph.cpp -o CMakeFiles/DisplayVideo.dir/Morph.cpp.s
+
+CMakeFiles/DisplayVideo.dir/Morph.cpp.o.requires:
+
+.PHONY : CMakeFiles/DisplayVideo.dir/Morph.cpp.o.requires
+
+CMakeFiles/DisplayVideo.dir/Morph.cpp.o.provides: CMakeFiles/DisplayVideo.dir/Morph.cpp.o.requires
+	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/Morph.cpp.o.provides.build
+.PHONY : CMakeFiles/DisplayVideo.dir/Morph.cpp.o.provides
+
+CMakeFiles/DisplayVideo.dir/Morph.cpp.o.provides.build: CMakeFiles/DisplayVideo.dir/Morph.cpp.o
+
+
 # Object files for target DisplayVideo
 DisplayVideo_OBJECTS = \
-"CMakeFiles/DisplayVideo.dir/trial_1.cpp.o" \
-"CMakeFiles/DisplayVideo.dir/Blob.cpp.o"
+"CMakeFiles/DisplayVideo.dir/main.cpp.o" \
+"CMakeFiles/DisplayVideo.dir/Blob.cpp.o" \
+"CMakeFiles/DisplayVideo.dir/Morph.cpp.o"
 
 # External object files for target DisplayVideo
 DisplayVideo_EXTERNAL_OBJECTS =
 
-DisplayVideo: CMakeFiles/DisplayVideo.dir/trial_1.cpp.o
+DisplayVideo: CMakeFiles/DisplayVideo.dir/main.cpp.o
 DisplayVideo: CMakeFiles/DisplayVideo.dir/Blob.cpp.o
+DisplayVideo: CMakeFiles/DisplayVideo.dir/Morph.cpp.o
 DisplayVideo: CMakeFiles/DisplayVideo.dir/build.make
 DisplayVideo: /usr/local/lib/libopencv_stitching.so.3.4.1
 DisplayVideo: /usr/local/lib/libopencv_superres.so.3.4.1
@@ -162,7 +188,7 @@ DisplayVideo: /usr/local/lib/libopencv_objdetect.so.3.4.1
 DisplayVideo: /usr/local/lib/libopencv_imgproc.so.3.4.1
 DisplayVideo: /usr/local/lib/libopencv_core.so.3.4.1
 DisplayVideo: CMakeFiles/DisplayVideo.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable DisplayVideo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable DisplayVideo"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/DisplayVideo.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -170,8 +196,9 @@ CMakeFiles/DisplayVideo.dir/build: DisplayVideo
 
 .PHONY : CMakeFiles/DisplayVideo.dir/build
 
-CMakeFiles/DisplayVideo.dir/requires: CMakeFiles/DisplayVideo.dir/trial_1.cpp.o.requires
+CMakeFiles/DisplayVideo.dir/requires: CMakeFiles/DisplayVideo.dir/main.cpp.o.requires
 CMakeFiles/DisplayVideo.dir/requires: CMakeFiles/DisplayVideo.dir/Blob.cpp.o.requires
+CMakeFiles/DisplayVideo.dir/requires: CMakeFiles/DisplayVideo.dir/Morph.cpp.o.requires
 
 .PHONY : CMakeFiles/DisplayVideo.dir/requires
 

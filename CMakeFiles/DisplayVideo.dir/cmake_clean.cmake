@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/DisplayVideo.dir/trial_1.cpp.o"
+  "CMakeFiles/DisplayVideo.dir/main.cpp.o"
   "CMakeFiles/DisplayVideo.dir/Blob.cpp.o"
+  "CMakeFiles/DisplayVideo.dir/Morph.cpp.o"
   "DisplayVideo.pdb"
   "DisplayVideo"
 )

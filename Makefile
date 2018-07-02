@@ -150,32 +150,59 @@ Blob.cpp.s:
 	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/Blob.cpp.s
 .PHONY : Blob.cpp.s
 
-trial_1.o: trial_1.cpp.o
+Morph.o: Morph.cpp.o
 
-.PHONY : trial_1.o
+.PHONY : Morph.o
 
 # target to build an object file
-trial_1.cpp.o:
-	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/trial_1.cpp.o
-.PHONY : trial_1.cpp.o
+Morph.cpp.o:
+	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/Morph.cpp.o
+.PHONY : Morph.cpp.o
 
-trial_1.i: trial_1.cpp.i
+Morph.i: Morph.cpp.i
 
-.PHONY : trial_1.i
+.PHONY : Morph.i
 
 # target to preprocess a source file
-trial_1.cpp.i:
-	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/trial_1.cpp.i
-.PHONY : trial_1.cpp.i
+Morph.cpp.i:
+	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/Morph.cpp.i
+.PHONY : Morph.cpp.i
 
-trial_1.s: trial_1.cpp.s
+Morph.s: Morph.cpp.s
 
-.PHONY : trial_1.s
+.PHONY : Morph.s
 
 # target to generate assembly for a file
-trial_1.cpp.s:
-	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/trial_1.cpp.s
-.PHONY : trial_1.cpp.s
+Morph.cpp.s:
+	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/Morph.cpp.s
+.PHONY : Morph.cpp.s
+
+main.o: main.cpp.o
+
+.PHONY : main.o
+
+# target to build an object file
+main.cpp.o:
+	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/main.cpp.o
+.PHONY : main.cpp.o
+
+main.i: main.cpp.i
+
+.PHONY : main.i
+
+# target to preprocess a source file
+main.cpp.i:
+	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/main.cpp.i
+.PHONY : main.cpp.i
+
+main.s: main.cpp.s
+
+.PHONY : main.s
+
+# target to generate assembly for a file
+main.cpp.s:
+	$(MAKE) -f CMakeFiles/DisplayVideo.dir/build.make CMakeFiles/DisplayVideo.dir/main.cpp.s
+.PHONY : main.cpp.s
 
 # Help Target
 help:
@@ -189,9 +216,12 @@ help:
 	@echo "... Blob.o"
 	@echo "... Blob.i"
 	@echo "... Blob.s"
-	@echo "... trial_1.o"
-	@echo "... trial_1.i"
-	@echo "... trial_1.s"
+	@echo "... Morph.o"
+	@echo "... Morph.i"
+	@echo "... Morph.s"
+	@echo "... main.o"
+	@echo "... main.i"
+	@echo "... main.s"
 .PHONY : help
 
 

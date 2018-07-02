@@ -16,13 +16,29 @@ opencv2/opencv.hpp
 iostream
 -
 
-/home/pi/opencv-3.4.1/opencv_demo/project/trial/trial_1.cpp
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/Morph.cpp
+Morph.h
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/Morph.h
+
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/Morph.h
+opencv2/opencv.hpp
+-
+iostream
+-
+
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/main.cpp
+main.h
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/main.h
+
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/main.h
 opencv2/opencv.hpp
 -
 iostream
 -
 Blob.h
 /home/pi/opencv-3.4.1/opencv_demo/project/trial/Blob.h
+Morph.h
+/home/pi/opencv-3.4.1/opencv_demo/project/trial/Morph.h
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h

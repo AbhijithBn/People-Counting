@@ -6,6 +6,6 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 
 
-add_executable( DisplayVideo trial_1.cpp Blob.cpp Blob.h )
+add_executable( DisplayVideo main.cpp Blob.cpp Blob.h Morph.h Morph.cpp main.h )
 target_link_libraries( DisplayVideo ${OpenCV_LIBS} )
 

@@ -5,7 +5,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
   "/home/pi/opencv-3.4.1/opencv_demo/project/trial/Blob.cpp" "/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles/DisplayVideo.dir/Blob.cpp.o"
-  "/home/pi/opencv-3.4.1/opencv_demo/project/trial/trial_1.cpp" "/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles/DisplayVideo.dir/trial_1.cpp.o"
+  "/home/pi/opencv-3.4.1/opencv_demo/project/trial/Morph.cpp" "/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles/DisplayVideo.dir/Morph.cpp.o"
+  "/home/pi/opencv-3.4.1/opencv_demo/project/trial/main.cpp" "/home/pi/opencv-3.4.1/opencv_demo/project/trial/CMakeFiles/DisplayVideo.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
